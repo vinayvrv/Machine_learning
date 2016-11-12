@@ -94,8 +94,6 @@ class NaiveBayes(Classifier):
     # TODO: implement learn and predict functions 
     def labels(self,Xtrain,ytrain):
         class_label={}
-        #print ytrain
-        #print Xtrain
         for i in range(len(ytrain)):
             if ytrain[i] not in class_label:
                 class_label[ytrain[i]]=[Xtrain[i]]
@@ -108,7 +106,6 @@ class NaiveBayes(Classifier):
         class_stats={}
         for key,val in data.items():
             class_stats[key]=[(utils.mean(col), utils.stdev(col)) for col in zip(*val)]
-        print class_stats
         return class_stats
 
 
@@ -189,22 +186,11 @@ class LogitReg(Classifier):
             score= np.dot(Xtrain,self.weights)
             pred= utils.sigmoid(score)
             derivative=	np.dot(np.transpose(Xtrain),np.subtract(ytrain,pred))
-            #print "old",self.weights
             self.weights+=step*derivative
-            #print "this is", self.weights
             newweights=copy.deepcopy(self.weights)
-            #print oldweights
-            #print newweights
-            #print newweights
             count+=1
             diff=np.subtract(newweights,oldweights)
-            #print np.subtract(newweights,oldweights)**2
             sqweiths= np.sum(np.power(diff,2))
-            #ok=np.sqrt(sqweiths)
-            #print "this is error",np.sqrt(np.sum((np.subtract(newweights,oldweights))**2))
-            #if np.sqrt(np.sum((np.subtract(newweights,oldweights))**2))<episolon:
-            print np.sqrt(sqweiths),episolon,count
-            #s=input("please press enter")
             if (np.sqrt(sqweiths)) < episolon:
                 convergence=True
         return self.weights
@@ -213,9 +199,6 @@ class LogitReg(Classifier):
         test_data = np.insert(test_data, 0, 1, axis=1)
         scores=np.dot(test_data,self.weights)
         predicts= utils.sigmoid(scores)
-        #ym = utils.mean(predicts)
-        #predicts[predicts >= ym] = 1
-        #predicts[predicts < ym] = 0
         threshold_p=utils.threshold_probs(predicts)
         return threshold_p
 		
@@ -306,7 +289,7 @@ class LogitReg(Classifier):
 #
 # 	def learn(self,Xtrain,ytrain):
 # 		Xtrain = np.insert(Xtrain, 0, 1, axis=1)
-# 		self.weights= np.dot(np.dot(np.linalg.inv(np.dot(Xtrain.T,Xtrain)),Xtrain.T),ytrain)
+# 		self.weights= np.zeros(Xtrain.shape[1])
 #
 # 		#p=range(Xtrain.shape[0])
 # 		episolon=0.0001
@@ -316,8 +299,8 @@ class LogitReg(Classifier):
 # 		#self.threshold_p=utils.threshold_probs(self.predicts)
 # 		count=0
 # 		convergence=False
-# 		while (convergence==False and count<20):
-# 			oldweights=self.weights
+# 		while (convergence==False and count<100):
+# 			oldweights=copy.deepcopy(self.weights)
 # 		#(count <(100) and  math.sq(np.sum((oldweights-newweights)**2))<episolon):
 # 			score= np.dot(Xtrain,self.weights)
 # 			pred= utils.sigmoid(score)
@@ -336,113 +319,117 @@ class LogitReg(Classifier):
 # 		threshold_p=utils.threshold_probs(predicts)
 #         return threshold_p
 #
-# class LogitReg2(Classifier):
+class LogitReg2(Classifier):
+
+    def __init__( self, parameters={} ):
+        # Default: no regularization
+        # self.params = {'regwgt': 0.0, 'regularizer': 'None'}
+		self.params = parameters
+    #     self.reset(parameters)
+    #
+    # def reset(self, parameters):
+    #     self.resetparams(parameters)
+    #     self.weights = None
+    #     if self.params['regularizer'] is 'l1':
+    #         self.regularizer = (utils.l1, utils.dl1)
+    #     elif self.params['regularizer'] is 'l2':
+    #         self.regularizer = (utils.l2, utils.dl2)
+    #     else:
+    #         self.regularizer = (lambda w: 0, lambda w: np.zeros(w.shape,))
+    #
+    # TODO: implement learn and predict functions
+
+
+    def learn(self,Xtrain,ytrain):
+        Xtrain = np.insert(Xtrain, 0, 1, axis=1)
+        self.weights= np.zeros(Xtrain.shape[1])#np.dot(np.dot(np.linalg.inv(np.dot(Xtrain.T,Xtrain)),Xtrain.T),ytrain)
+        episolon=0.0001
+
+        count=0
+        convergence=False
+        l2penalty=0.01
+        step=0.001
+        while (convergence==False or count<100):
+            oldweights=copy.deepcopy(self.weights)
+            score= np.dot(Xtrain,self.weights)
+            pred= utils.sigmoid(score)
+            update = l2penalty * self.weights
+            likehod=np.dot(Xtrain.T, np.subtract(ytrain, pred))
+            derivative = np.subtract(likehod,update)
+            self.weights+=step*derivative
+            newweights=copy.deepcopy(self.weights)
+            count+=1
+            diff=newweights-oldweights
+            sqweiths= np.sum(np.power(diff,2))
+            #print np.sqrt(sqweiths),episolon,count
+            if (np.sqrt(sqweiths)) < episolon:
+                convergence=True
+        return self.weights
+
+
+    def predict(self,test_data):
+        test_data = np.insert(test_data, 0, 1, axis=1)
+        scores=np.dot(test_data,self.weights)
+        predicts= utils.sigmoid(scores)
+        #ym = utils.mean(predicts)
+        #predicts[predicts >= ym] = 1
+        #predicts[predicts < ym] = 0
+        threshold_p=utils.threshold_probs(predicts)
+        return threshold_p
 #
-#     def __init__( self, parameters={} ):
-#         # Default: no regularization
-#         # self.params = {'regwgt': 0.0, 'regularizer': 'None'}
-# 		self.params = parameters
-#         self.reset(parameters)
-#
-#     def reset(self, parameters):
-#         self.resetparams(parameters)
-#         self.weights = None
-#         if self.params['regularizer'] is 'l1':
-#             self.regularizer = (utils.l1, utils.dl1)
-#         elif self.params['regularizer'] is 'l2':
-#             self.regularizer = (utils.l2, utils.dl2)
-#         else:
-#             self.regularizer = (lambda w: 0, lambda w: np.zeros(w.shape,))
-#
-#     # TODO: implement learn and predict functions
-#
-#
-# 	def learn(self,Xtrain,ytrain):
-# 		Xtrain = np.insert(Xtrain, 0, 1, axis=1)
-# 		self.weights= np.dot(np.dot(np.linalg.inv(np.dot(Xtrain.T,Xtrain)),Xtrain.T),ytrain)
-# 		l
-# 		#p=range(Xtrain.shape[0])
-# 		episolon=0.0001
-#
-# 		#pred= np.dot(Xtrain,self.weights)
-# 		#self.predicts= utils.sigmoid(pred)
-# 		#self.threshold_p=utils.threshold_probs(self.predicts)
-# 		count=0
-# 		convergence=False
-# 		while (convergence==False and count<20):
-# 			oldweights=self.weights
-# 		#(count <(100) and  math.sq(np.sum((oldweights-newweights)**2))<episolon):
-# 			score= np.dot(Xtrain,self.weights)
-# 			pred= utils.sigmoid(score)
-# 			#error=ytrain-pred
-# 			derivative=	np.dot(Xtrain.transpose,np.subtract(ytrain-pred))-lambda*self.weights
-# 			self.weights+=step*derivative
-# 			newweights=self.weights
-# 			count+=1
-# 			if abs(np.sum(np.subtract(newweights-oldweights)))<episolon:
-# 				convergence=True
-# 		return self.weights
-#
-# 	def predict(self,test_data):
-# 		scores=np.dot(test_data,self.weights)
-# 		predicts= utils.sigmoid(scores)
-# 		threshold_p=utils.threshold_probs(predicts)
-#         return threshold_p
-#
-# class LogitReg1(Classifier):
-#
-#     def __init__( self, parameters={} ):
-#         # Default: no regularization
-#         # self.params = {'regwgt': 0.0, 'regularizer': 'None'}
-# 		self.params = parameters
-#         self.reset(parameters)
-#
-#     def reset(self, parameters):
-#         self.resetparams(parameters)
-#         self.weights = None
-#         if self.params['regularizer'] is 'l1':
-#             self.regularizer = (utils.l1, utils.dl1)
-#         elif self.params['regularizer'] is 'l2':
-#             self.regularizer = (utils.l2, utils.dl2)
-#         else:
-#             self.regularizer = (lambda w: 0, lambda w: np.zeros(w.shape,))
-#
-#     # TODO: implement learn and predict functions
-#
-#
-# 	def learn(self,Xtrain,ytrain):
-# 		Xtrain = np.insert(Xtrain, 0, 1, axis=1)
-# 		self.weights= np.dot(np.dot(np.linalg.inv(np.dot(Xtrain.T,Xtrain)),Xtrain.T),ytrain)
-#
-# 		#p=range(Xtrain.shape[0])
-# 		episolon=0.0001
-#
-# 		#pred= np.dot(Xtrain,self.weights)
-# 		#self.predicts= utils.sigmoid(pred)
-# 		#self.threshold_p=utils.threshold_probs(self.predicts)
-# 		count=0
-# 		convergence=False
-# 		while (convergence==False and count<20):
-# 			oldweights=self.weights
-# 		#(count <(100) and  math.sq(np.sum((oldweights-newweights)**2))<episolon):
-# 			score= np.dot(Xtrain,self.weights)
-# 			pred= utils.sigmoid(score)
-# 			#error=ytrain-pred
-# 			derivative=	np.dot(Xtrain.transpose,np.subtract(ytrain-pred))-lambda*(np.sign(self.weights))
-# 			self.weights+=step*derivative
-# 			newweights=self.weights
-# 			count+=1
-# 			if abs(np.sum(np.subtract(newweights-oldweights)))<episolon:
-# 				convergence=True
-# 		return self.weights
-#
-# 	def predict(self,test_data):
-# 		scores=np.dot(test_data,self.weights)
-# 		predicts= utils.sigmoid(scores)
-# 		threshold_p=utils.threshold_probs(predicts)
-#         return threshold_p
-#
-#
+class LogitReg1(Classifier):
+
+    def __init__( self, parameters={} ):
+        # Default: no regularization
+        # self.params = {'regwgt': 0.0, 'regularizer': 'None'}
+		self.params = parameters
+        #self.reset(parameters)
+
+    # def reset(self, parameters):
+    #     self.resetparams(parameters)
+    #     self.weights = None
+    #     if self.params['regularizer'] is 'l1':
+    #         self.regularizer = (utils.l1, utils.dl1)
+    #     elif self.params['regularizer'] is 'l2':
+    #         self.regularizer = (utils.l2, utils.dl2)
+    #     else:
+    #         self.regularizer = (lambda w: 0, lambda w: np.zeros(w.shape,))
+
+    # TODO: implement learn and predict functions
+
+
+    def learn(self,Xtrain,ytrain):
+        Xtrain = np.insert(Xtrain, 0, 1, axis=1)
+        self.weights= np.dot(np.dot(np.linalg.inv(np.dot(Xtrain.T,Xtrain)),Xtrain.T),ytrain)
+        episolon=0.0001
+        l1penalty=0.01
+        count=0
+        convergence=False
+        while (convergence==False and count<20):
+            oldweights=copy.deepcopy(self.weights)
+            score= np.dot(Xtrain,self.weights)
+            pred= utils.sigmoid(score)
+            update = l1penalty * np.sign(self.weights)
+            likehod = np.dot(Xtrain.T, np.subtract(ytrain, pred))
+            derivative = np.subtract(likehod, update)
+            #derivative=	np.dot(Xtrain.transpose,np.subtract(ytrain-pred))-lambda*(np.sign(self.weights))
+            self.weights+=step*derivative
+            newweights=copy.deepcopy(self.weights)
+            count+=1
+            diff=np.subtract(newweights,oldweights)
+            sqweiths= np.sum(np.power(diff,2))
+            if  (np.sqrt(sqweiths)) < episolon:
+                convergence=True
+            return self.weights
+
+
+    def predict(self,test_data):
+        scores=np.dot(test_data,self.weights)
+        predicts= utils.sigmoid(scores)
+        threshold_p=utils.threshold_probs(predicts)
+        return threshold_p
+
+
 #
 #
 #
@@ -500,55 +487,60 @@ class LogitReg(Classifier):
 #     # TODO: implement learn and predict functions
 #
 #
-# class LogitReg3(Classifier):
-#
-#     def __init__( self, parameters={} ):
-#         # Default: no regularization
-#         # self.params = {'regwgt': 0.0, 'regularizer': 'None'}
-# 		self.params = parameters
-#         self.reset(parameters)
-#
-#     def reset(self, parameters):
-#         self.resetparams(parameters)
-#         self.weights = None
-#         if self.params['regularizer'] is 'l1':
-#             self.regularizer = (utils.l1, utils.dl1)
-#         elif self.params['regularizer'] is 'l2':
-#             self.regularizer = (utils.l2, utils.dl2)
-#         else:
-#             self.regularizer = (lambda w: 0, lambda w: np.zeros(w.shape,))
-#
-#     # TODO: implement learn and predict functions
-#
-#
-# 	def learn(self,Xtrain,ytrain):
-# 		Xtrain = np.insert(Xtrain, 0, 1, axis=1)
-# 		self.weights= np.dot(np.dot(np.linalg.inv(np.dot(Xtrain.T,Xtrain)),Xtrain.T),ytrain)
-#
-# 		#p=range(Xtrain.shape[0])
-# 		episolon=0.0001
-#
-# 		#pred= np.dot(Xtrain,self.weights)
-# 		#self.predicts= utils.sigmoid(pred)
-# 		#self.threshold_p=utils.threshold_probs(self.predicts)
-# 		count=0
-# 		convergence=False
-# 		while (convergence==False and count<20):
-# 			oldweights=self.weights
-# 		#(count <(100) and  math.sq(np.sum((oldweights-newweights)**2))<episolon):
-# 			score= np.dot(Xtrain,self.weights)
-# 			pred= utils.sigmoid(score)
-# 			#error=ytrain-pred
-# 			derivative=	np.dot(Xtrain.transpose,np.subtract(ytrain-pred))-l2penalty*self.weights-l1penalty*np.sign(self.weights)
-# 			self.weights+=step*derivative
-# 			newweights=self.weights
-# 			count+=1
-# 			if abs(np.sum(np.subtract(newweights-oldweights)))<episolon:
-# 				convergence=True
-# 		return self.weights
-#
-# 	def predict(self,test_data):
-# 		scores=np.dot(test_data,self.weights)
-# 		predicts= utils.sigmoid(scores)
-# 		threshold_p=utils.threshold_probs(predicts)
-#         return threshold_p
+class LogitRegAlternative(Classifier):
+    def __init__( self, parameters={} ):
+        # Default: no regularization
+        # self.params = {'regwgt': 0.0, 'regularizer': 'None'}
+		self.params = parameters
+        #self.reset(parameters)
+        #
+        # def reset(self, parameters):
+        # self.resetparams(parameters)
+        # self.weights = None
+        # if self.params['regularizer'] is 'l1':
+        #     self.regularizer = (utils.l1, utils.dl1)
+        # elif self.params['regularizer'] is 'l2':
+        #     self.regularizer = (utils.l2, utils.dl2)
+        # else:
+        #     self.regularizer = (lambda w: 0, lambda w: np.zeros(w.shape,))
+
+    # TODO: implement learn and predict functions
+
+
+    def learn(self,Xtrain,ytrain):
+        Xtrain = np.insert(Xtrain, 0, 1, axis=1)
+        self.weights= np.zeros(Xtrain.shape[1])
+        episolon=0.00001
+        l1penalty=0.01
+        l2penalty=0.01
+        step=0.001
+        count=0
+        convergence=False
+        while(convergence==False): #and count<20000):
+            oldweights=copy.deepcopy(self.weights)
+            score= np.dot(Xtrain,self.weights)
+            pred= utils.sigmoid(score)
+            likehod = np.dot(Xtrain.T, np.subtract(ytrain, pred))
+            updatel2=l2penalty*self.weights
+            likehod = np.subtract(likehod, updatel2)
+            updatel1 = l1penalty * np.sign(self.weights)
+            derivative = np.subtract(likehod, updatel1)
+            #updatel2=l1penalty*np.sign(self.weights)
+            #update=np.add(updatel1,updatel2)
+            #derivative=	np.add(likehod,update)
+            self.weights+=step*derivative
+            newweights=copy.deepcopy(self.weights)
+            count+=1
+            diff = np.subtract(newweights, oldweights)
+            sqweiths= np.sum(np.power(diff,2))
+            print sqweiths,episolon,count
+            if  sqweiths < episolon:
+                convergence=True
+        return self.weights
+
+    def predict(self,test_data):
+        test_data = np.insert(test_data, 0, 1, axis=1)
+        scores=np.dot(test_data,self.weights)
+        predicts= utils.sigmoid(scores)
+        threshold_p=utils.threshold_probs(predicts)
+        return threshold_p
