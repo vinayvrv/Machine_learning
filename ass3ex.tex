@@ -1,0 +1,234 @@
+\documentclass[11pt]{article}
+\usepackage{fancyheadings,multicol}
+\usepackage{amsmath,amssymb}
+
+
+\setlength{\textheight}{\paperheight}
+\addtolength{\textheight}{-2in}
+\setlength{\topmargin}{-.5in}
+\setlength{\headsep}{.5in}
+\addtolength{\headsep}{-\headheight}
+\setlength{\footskip}{.5in}
+\setlength{\textwidth}{\paperwidth}
+\addtolength{\textwidth}{-2in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\flushbottom
+
+\allowdisplaybreaks
+
+\pagestyle{fancyplain}
+\let\headrule=\empty
+\let\footrule=\empty
+\lhead{\fancyplain{}{Fall 2015}}
+\rhead{\fancyplain{}{CSCI-B555: Machine Learning}}
+\cfoot{{\thepage/\pageref{EndOfAssignment}}}
+
+\newcounter{totalmarks}
+\setcounter{totalmarks}{0}
+\newcounter{questionnumber}
+\setcounter{questionnumber}{0}
+\newcounter{subquestionnumber}[questionnumber]
+\setcounter{subquestionnumber}{0}
+\renewcommand{\thesubquestionnumber}{(\alph{subquestionnumber})}
+\newcommand{\question}[2][]%
+  {\ifx\empty#2\empty\else
+   \addtocounter{totalmarks}{#2}\refstepcounter{questionnumber}\fi
+   \bigskip\noindent\textbf{\Large Question \thequestionnumber. } #1
+   {\scshape\ifx\empty#2\empty(continued)\else
+   [#2 mark\ifnum #2 > 1 s\fi]\fi}\par
+   \medskip\noindent\ignorespaces}
+\newcommand{\subquestion}[2][]%
+  {\ifx\empty#2\empty\else\refstepcounter{subquestionnumber}\fi
+   \medskip\noindent\textbf{\large \thesubquestionnumber } #1
+   {\scshape\ifx\empty#2\empty(continued)\else
+   [#2 mark\ifnum #2 > 1 s\fi]\fi}
+   \smallskip\noindent\ignorespaces}
+\newcommand{\bonus}[2][]%
+  {\bigskip\noindent\textbf{\Large Bonus. } #1
+   {\scshape\ifx\empty#2\empty(continued)\else
+   [#2 mark\ifnum #2 > 1 s\fi]\fi}\par
+   \medskip\noindent\ignorespaces}
+
+\usepackage{totcount}
+\regtotcounter{totalmarks}
+
+
+\begin{document}
+
+\thispagestyle{plain}
+
+\begin{center}
+\bfseries
+{\Large Homework Assignment \# 3}\\
+   Due: Wednesday, November 16, 2016, 11:59 p.m. \\
+   Total marks: \total{totalmarks}
+\end{center}
+
+\question{60}
+
+In this question, you will implement several binary classifiers:
+naive Bayes, logistic regression and a neural network.
+An initial script in python has been given to you, called
+\verb+script_classify.py+, and associated python files.
+You will be running on a physics dataset, with 9 features
+and 100,000 samples. The features are augmented to have 
+a column of ones.
+Baseline algorithms, including random predictions and linear regression,
+are used to serve as sanity checks. We should be able to outperform
+random predictions, and linear regression for this binary classification dataset.
+
+
+\subquestion{15}
+Implement naive Bayes, assuming a Gaussian distribution
+on each of the features. 
+Try including the columns of ones and not including the column of ones
+in the predictor. What happens? Explain why.\\\\\\\textbf{Answer: }\\ The Gaussian naive Bayers is implemented \\\\\textbf{Observations } The column of one is a bias unit with mean 1 and variance zero. This zero variance will cause a problem when we try to calculate the probability of a value from that column (bias column )using the Gaussian formula  \\
+
+\hspace{20mm}$f(x_j|y=c)$ = $(2\pi\sigma_j,_c)^\frac{-1}{2} *e^-(\frac{(x-\mu_j,_c)^2}{2\sigma_j^2,_c})$\\
+
+where $\mu_j,_c$ is the mean for j feature with class "c"  and $\sigma_j,_c^2$ is the variance for j feature with class "c". In my implementation it gives a division by zero error. In the code provided by the Professor the utils function \textit{"calculateprob"} takes care of this issue using check for variance/standard deviation and math.fabs(x-mean) and returns 1 when the result is below a particular threshold. We I commented this check I got a division by zero error.\\
+
+When I keep the column of ones and keep the bias column, the probability of that column for each value corresponding to its entry is 1 as per the utils formula.Hence it is ideally taking the value or probabilities of all other 8 columns before it.
+
+
+
+
+\subquestion{15}
+Implement logistic regression.\\\\\textbf{Answer :} Implemented logistic regression. The average error of the 23.9218 and a std of +/- 0.121365751265 
+
+\subquestion{20}
+Implement a neural network with a single hidden layer, with the sigmoid transfer.\\\\\textbf{Answer :} Implemented Neural Network. The average error of the 23.9218 and a std of +/- 0.121365751265
+
+
+
+\subquestion{10}
+Briefly describe the behavior of these classification algorithms you have implemented.
+You do not need to make claims about statistically significant behavior,
+but report average error and standard error. You do not need to run on the whole dataset.
+
+Answer:\\\\a) Naive Bayers is a generative model and assumes that all the features are independent. It consists of the priors for each class or labels and I have implemented a linear classifier. It calculates the probability of each feature given the class. Each features probability is calculated based on the mean and the standard deviation of that feature and class. The individual probabilities for each feature for each class is multiplied and finally which class has the highest probability(for test data) for that input gets assigned to the data as its label. The probabilities at the start are big, but subsequent multiplication with other features probability make them very small   \\\\b) logistic regression is a discriminative model. It is a part of Generalized model and maps the linear output from the regression to a domain between 0,1 i.e converts them into probabilities using the link function Sigmoid. We use likelihood function and assume that the distribution is Bernoulli. This algorithm works on an iterative approach adjusting the weights which helps improve the accuracy of the classifier. The best line that separates the data points has high likelihood.\\\\c) Neural Network- Neural networks have layers. Layers are made up of a number of interconnected 'nodes' which contain an 'activation function'. Patterns are presented to the network via the 'input layer', which communicates to one or more 'hidden layers' where the actual processing is done via a system of weighted 'connections'. The hidden layers then link to an 'output layer' where we can see the output.\\\\
+Each input node is connected with the hidden layer with a weight, these are summarized at each node and an activation function is applied to each entry and return a result of same dimension (X*W). The hidden node and the output layer are also connected with weights. Based on the output of the neural networks compared with the actual label/output(error) the weights on connecting each nodes in the layers are adjusted based on the value of this error(delta). In the given implementation this will go on for a given number of epochs. 
+
+
+
+
+
+
+
+
+\begin{table}[]
+	\centering
+	\caption{My caption}
+	\label{my-label}
+	\begin{tabular}{|l|l|l|l|l}
+		\cline{1-4}
+		Classifier&Avg-error  &Std-error  &Settings  &  \\ \cline{1-4}
+		Naive Bayes&  &  &  NA &  \\ \cline{1-4}
+		Logistics Regression &  &  &  &  \\ \cline{1-4}
+		Neural Network&  &  &  &  \\ \cline{1-4}
+	\end{tabular}
+\end{table}
+
+
+
+\question{20}
+Consider a classification problem where $\mathcal{X}=\mathbb{R}^d$ and 
+$\mathcal{Y}=\{0, 1\}$. 
+Based on your understanding of the maximum likelihood estimation of weights in logistic regression, 
+develop a linear classifier that models the posterior probability of the positive class as
+%
+\begin{align*}
+P(y=1|\mathbf{x},\mathbf{w})=\frac{1}{2} \left(1+\frac{\mathbf{w}^\top \mathbf{x}}{\sqrt{1+(\mathbf{w}^\top \mathbf{x})^2}} \right)
+\end{align*}
+%
+%
+Implement the iterative weight update rule and 
+compare the performance on the physics dataset to
+logistic regression. As before, you do not need to check for
+statistically significant behavior, but in a few sentences describe
+what you notice. 
+
+
+
+\question{20}
+In this question, you will add regularization to logistic regression,
+and check the behavior again on the expanded physics dataset, which has 18 features (called \verb+susy_complete+ in the code).
+Note that using regularization on the base physics dataset, which only has 9 features,
+would not have as strong of an effect; with more features,
+the regularization choice is likely to have more impact.
+For all the three settings below, 
+implement the iterative update rule
+and in a few sentences briefly describe the behavior,
+versus vanilla logistic regression and versus the other regularizers. 
+
+\subquestion{5}
+Explain how you would add an $\ell_2$ regularizer on $\mathbf{w}$
+and an $\ell_1$ regularizer on $\mathbf{w}$.
+Implement both of these.\\\\ Answer \\\\ In logistic regression we get over fitting. To reduce this we can use regularization. In logistic regression we deal with  log-likelihood, where we define The likelihood of a set of parameter values, ?, given outcomes x, is equal to the probability of those observed outcomes given those parameter values. \\\\We take the derivative of the log- likelihood which gives us the gradient of log likelihood as \triangledown$ll(W$)=$X^T(y-p)$ where y is the actual label and p is estimated posterior probabilities\\\\we then  deduct the derivative of the  product of the lambda or tuning paramater and the appropriate norm of the weights from the log the gradient of Log Likelihood\\\\ In general we have the gradient of Log-likeihood as $ X^T(y-p)$ \\
+we have the penalty as lambda * $|$norm of the weights (W)$|$ lets call this regularization term \\\\ putting it all together we total quality as\\\\ \hspace{20mm}$X^T(y-p)$ -  $derivative$ (regularization term), This is part of the update rule for the weights which help maximize Likelihood.\\\\For L1 regularization we have part of the update rule as  $X^T(y-p)$ - $\lambda * sign(W)$. Where sign basically thershold the weights based on their value e.g if $w_i$ is less than zero it becomes-1,  $w_i$ is greater than zero it becomes +1, if $w_i$ is equal to zero it becomes zero.\\\\For L2 regularization we have part of the update rule as  $X^T(y-p)$ - $2*\lambda * (W)$. In most of the literature $\lambda$ is taken as $\lambda/2$ and hence after derivation it matches the above derivation of L2 norm ( I have used the same implementation assumption)  .\\\\ Given the above part updates the final update to the prsent weights is made as follows\\\\$W^{t+1}\leftarrow W^t +Stepsize$ * $total$ $quality$, where Total quality for L1 is equal to $X^T(y-p)$ - $\lambda * sign(W)$.\\\\ The Total quality for L2 is equal to $X^T(y-p)$ - $\lambda * (W)$\\\\ And The Total quality for Elastic Net  is equal to $X^T(y-p)$ - $\lambda * (W)$ -  $\lambda * sign(W)$\\\\
+
+
+
+
+
+
+\subquestion{10}
+Pick a third regularizer of your choosing, and explain how
+you would learn with this regularizer in logistic regression (i.e., provide an iterative update
+rule and/or an algorithm).\\
+Implement this regularization.\\\\Answer: The third regularizer used is Elastic Net, Which is a method of linear combination of L1  and L2. he elastic net method overcomes the limitations of the LASSO\\\\For example, in the "large p, small n" case (high-dimensional data with few examples), the LASSO selects at most n variables before it saturates. Also if there is a group of highly correlated variables, then the LASSO tends to select one variable from a group and ignore the others. To overcome these limitations, the elastic net adds a quadratic part to the penalty which when used alone is ridge regression (known also as Tikhonov regularization).\\\\ As above in he L1 and L2 cases we use likelihood (maximize likelihood). Similarly we will have gradient of Log likelihood as \triangledown$ll(W$)=$X^T(y-p)$.\\\\Total Quality=$X^T(y-p)$ - $derivative$(regularization term), here regularization term = L2 +L1 \\\\$X^T(y-p)$ - $derivative$ (\lambda\frac{1}{2 } |W|_{2}^{2}+\lambda\|W|_{1}^{1})$, This translates to\\\\Total quality=$X^T(y-p)$- \lambda(W) -\lambda sign(W)\\\\$W^{t+1}\leftarrow $W^t +Stepsize$ * $total$ $quality$\\\\ This process of weight updation goes on till a stopping criteria is meet. Ideally its the change in old and new weights compared to a threshold.
+
+
+
+\subquestion{5}
+In a few sentences, briefly describe the behavior of the regularizers.\\\\ Answer:
+
+L2 regularization- is a acts as Gaussian prior. L2 is better in reducing prediction error than L1 when the predictors are highly correlated. L2 tries to distributed the weight among correlated features. L2 pushes the weights close to zero, but not exactly to zero In the given implementation the weights of the coefficients are
+
+L1 regularization- is like a Laplacian prior. L1 penalty supports sparse solutions, its pushes the weight lower and tries to make them exactly zero. In the given implemententions the weights of the coefficients are
+
+L3 regularization- elastic net is a regularization that linearly combines the L1 and L2 penalties of the lasso and ridge methods. The elastic net method overcomes the limitations of the LASSO.
+
+For example, in the "large p, small n" case (high-dimensional data with few examples), the LASSO selects at most n variables before it saturates. Also if there is a group of highly correlated variables, then the LASSO tends to select one variable from a group and ignore the others. To overcome these limitations, the elastic net adds a quadratic part to the penalty which when used alone is ridge regression(quadratic penalty) term makes the loss function strictly convex, and it therefore has a unique minimum. Elastic net works in two steps. First the ridge regression coefficients and then the lasso performs the shrinkage. This regularization may cause double shrinkage 
+
+
+
+
+
+
+\vspace{0.5cm}
+\begin{center}
+{\large \textbf{Homework policies:}}
+\end{center}
+
+Your assignment will be submitted as a single pdf document and a zip file with code, on canvas. 
+The questions must be typed; for example, in Latex, Microsoft Word, Lyx, etc.
+or must be written legibly and scanned.
+Images may be scanned and inserted into the document if it is too complicated to draw them properly. 
+All code (if applicable) should be turned in when you submit your assignment. 
+Use Matlab, Python, R, Java or C.
+
+Policy for late submission assignments: Unless there are legitimate circumstances, late assignments will be accepted up to 5 days after the due date and graded using the following rule: 
+
+\begin{enumerate}
+\itemsep0em 
+\item[]    on time:	your score × 1
+ \item[]   1 day late: 	your score × 0.9
+\item[]    2 days late: 	your score × 0.7
+\item[]    3 days late: 	your score × 0.5
+ \item[]   4 days late: 	your score × 0.3
+ \item[]   5 days late: 	your score × 0.1
+\end{enumerate}
+
+For example, this means that if you submit 3 days late and get 80 points for your answers, your total number of points will be $80 \times 0.5 = 40$ points.
+
+All assignments are individual, except when collaboration is explicitly allowed. All the sources used for problem solution must be acknowledged, e.g. web sites, books, research papers, personal communication with people, etc. Academic honesty is taken seriously; for detailed information see Indiana University Code of Student Rights, Responsibilities, and Conduct.
+
+\begin{center}
+{\large \textbf{Good luck!}}
+\end{center}
+
+\label{EndOfAssignment}%
+
+\end{document}
