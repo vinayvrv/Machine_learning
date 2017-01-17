@@ -159,7 +159,7 @@ class NaiveBayes(Classifier):
 
 
 ######################################################
-# assignment 4 RBF part implementation
+#  RBF part implementation
 ######################################################
 class RBFgaussian(Classifier): # implementing RBF Function
     def __init__(self, parameters=None):
