@@ -425,4 +425,88 @@ class LogitReg(Classifier):
         predicts = utils.sigmoid(scores)
         threshold_p = utils.threshold_probs(predicts)
         return threshold_p
+    
+    class NeuralNet(Classifier):
+    def __init__(self, parameters={}):
+        self.params = {'nh': 4,
+                       'transfer': 'sigmoid',
+                       'stepsize': 0.01,
+                       'epochs': 100}
+        self.reset(parameters)
+
+    def reset(self, parameters):
+        self.resetparams(parameters)
+        if self.params['transfer'] is 'sigmoid':
+            self.transfer = utils.sigmoid
+            self.dtransfer = utils.dsigmoid
+            self.ni = 9 # we know that there are nine features and we need to change this manually
+            self.no = 1
+            self.nh = self.params['nh']
+            self.step = self.params['stepsize']
+           # print self.step
+            self.params['epochs']=self.params['epochs']
+            self.epochs=self.params['epochs']
+            #print self.epochs
+
+        else:
+            # For now, only allowing sigmoid transfer
+            raise Exception('NeuralNet -> can only handle sigmoid transfer, must set option transfer to string sigmoid')
+            self.wi = None
+            self.wo = None
+
+        # renaming for tracking purpose
+        node_number=copy.deepcopy(self.nh)
+        node_input=copy.deepcopy(self.ni)
+        node_output=copy.deepcopy(self.no)
+        self.wi = 5*np.random.random_sample((node_number, node_input))-4
+        #print "here are weights",self.wi
+        self.wo = 5*np.random.random_sample((node_output,node_number))-4
+
+    def learn(self, Xtrain, ytrain):
+        for reps in range(self.epochs):
+            for each in range(Xtrain.shape[0]):
+                self.feedback(Xtrain[each, :], ytrain[each])
+
+    def evaluate(self, inputs):
+        """
+        Returns the output of the current neural network for the given input
+        The underscore indicates that this is a private function to the class NeuralNet
+        """
+
+        if inputs.shape[0] != self.ni:
+            raise ValueError('NeuralNet:evaluate -> Wrong number of inputs')
+
+        # hidden activations
+        ah = self.transfer(np.dot(self.wi, inputs))
+        # output activations
+        ao = self.transfer(np.dot(self.wo, ah))
+        return (ah, ao)
+
+    def feedback(self, Xtrain, ytrain):
+        ah, values = self.evaluate(Xtrain)
+        Xtrain = np.reshape(Xtrain.T, (1, Xtrain.shape[0]))
+        change = ((-(ytrain / values) + (1 - ytrain) / (1 - values)) * (values * (1 - values)))
+        score = np.dot(self.wi, Xtrain.T)
+        transfer_score = self.transfer(score)
+        upd1 = change * transfer_score.T
+        dtransfer_score = self.dtransfer(score)
+        upd2 = change * np.multiply(self.wo.T, dtransfer_score)
+        self.wo = self.wo - self.step * upd1
+        self.wi = self.wi - self.step * upd2
+
+
+    def predict(self, Xtest):
+        result=[]
+        value = self.transfer(np.dot(self.wi, Xtest.T))
+        value=np.insert(value, -1, 1, axis=1)# creating appropriate dimensions
+        #print "this is ", value
+
+        possibility = self.transfer(np.dot(self.wo, value))
+        for i in possibility:
+            for j in i:
+                if j<0.5: # This is based on the threshold_probs function in the utils
+                    result.append([0])
+                else:
+                    result.append([1])
+        return result
 
